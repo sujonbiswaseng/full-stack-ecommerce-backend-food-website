@@ -6,6 +6,12 @@ import { ICreateHighlightInput, IUpdateHighlightInput } from "./highlight.interf
 
 // Create a new highlight
 const createHighlight = async (user: IRequestUser, payload: ICreateHighlightInput) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!existingUser) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
   const { title, description, image } = payload;
 
   if (!title || !description) {
@@ -17,7 +23,7 @@ const createHighlight = async (user: IRequestUser, payload: ICreateHighlightInpu
       title,
       description,
       image: image ?? null,
-      userId: user.userId,
+      userId: existingUser.id,
     },
   });
 
@@ -84,13 +90,19 @@ const getSingleHighlight = async (highlightId: string) => {
 
 // Update highlight
 const updateHighlight = async (highlightId: string, payload: IUpdateHighlightInput, user: IRequestUser) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!existingUser) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
   const highlight = await prisma.highlight.findUnique({
     where: { id: highlightId },
   });
   if (!highlight) {
     throw new AppError(status.NOT_FOUND, "Highlight not found");
   }
-  if (user.role !== "ADMIN" && highlight.userId !== user.userId) {
+  if (existingUser.role !== "Admin" && highlight.userId !== existingUser.id) {
     throw new AppError(status.FORBIDDEN, "You are not authorized to update this highlight");
   }
   const updatedHighlight = await prisma.highlight.update({
@@ -102,13 +114,19 @@ const updateHighlight = async (highlightId: string, payload: IUpdateHighlightInp
 
 // Delete highlight
 const deleteHighlight = async (user: IRequestUser, highlightId: string) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!existingUser) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
   const highlight = await prisma.highlight.findUnique({
     where: { id: highlightId },
   });
   if (!highlight) {
     throw new AppError(status.NOT_FOUND, "Highlight not found");
   }
-  if (user.role !== "ADMIN" && highlight.userId !== user.userId) {
+  if (existingUser.role !== "Admin" && highlight.userId !== existingUser.id) {
     throw new AppError(status.FORBIDDEN, "You are not authorized to delete this highlight");
   }
   const deletedHighlight = await prisma.highlight.delete({

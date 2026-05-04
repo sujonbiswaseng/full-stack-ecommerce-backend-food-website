@@ -2,7 +2,8 @@ import Stripe from "stripe";
 import { prisma } from "../../lib/prisma";
 import { parseDateForPrisma } from "../../utils/parseDate";
 import AppError from "../../errorHelper/AppError";
-import { PaymentStatus } from "../../../../generated/prisma/enums";
+import { PaymentStatus } from "../../../generated/prisma/enums";
+
 
 const deleteParticipantAndPayment = async (
   participantId?: string,

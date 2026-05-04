@@ -1,12 +1,12 @@
-import z from "zod";
-import { ProviderProfile } from "../../../../generated/prisma/client";
+
 import { prisma } from "../../lib/prisma";
-import { formatZodIssues } from "../../utils/handleZodError";
-import { CreateproviderData, UpdateproviderData } from "./provider.validation";
+
 import { ICreateproviderData } from "./provider.interface";
 import AppError from "../../errorHelper/AppError";
 import status from "http-status";
-import { MealWhereInput, ProviderProfileWhereInput } from "../../../../generated/prisma/models";
+import { ProviderProfileWhereInput } from "../../../generated/prisma/models";
+import { ProviderProfile } from "../../../generated/prisma/client";
+
 
 const createProvider = async (data: ICreateproviderData, userId: string) => {
   const existinguser = await prisma.user.findUnique({ where: { id: userId } });

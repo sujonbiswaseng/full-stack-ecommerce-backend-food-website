@@ -2,9 +2,10 @@ import { betterAuth, string } from "better-auth";
 import { prisma } from "./prisma";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { bearer, emailOTP } from "better-auth/plugins";
-import { Role, Status } from "../../../generated/prisma/enums";
 import { sendEmail } from "../utils/email";
 import { envVars } from "../config/env";
+import { UserRoles } from "../middleware/auth.const";
+import { Status } from "../../generated/prisma/enums";
 
 export const auth = betterAuth({
     secret: envVars.BETTER_AUTH_SECRET,
@@ -128,7 +129,7 @@ export const auth = betterAuth({
             redirectURI:`${envVars.FRONTEND_URL}/api/auth/callback/google`,
             mapProfileToUser: () => {
               return {
-                role: Role.Customer,
+                role: UserRoles.Customer,
                 status: Status.activate,
                 emailVerified: true,
                 bgimage:""

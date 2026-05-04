@@ -2,7 +2,8 @@ import status from "http-status";
 import AppError from "../../errorHelper/AppError";
 import { IRequestUser } from "../../interface/requestUser.interface";
 import { prisma } from "../../lib/prisma";
-import { PaymentStatus, Role } from "../../../../generated/prisma/enums";
+import { UserRoles } from "../../middleware/auth.const";
+import { PaymentStatus } from "../../../generated/prisma/enums";
 
 const getDashboardStatsData = async (user: IRequestUser) => {
   // Check if user exists (based on userId)
@@ -15,10 +16,10 @@ const getDashboardStatsData = async (user: IRequestUser) => {
   }
   let statsData;
   switch (user.role) {
-    case Role.Admin:
+    case UserRoles.Admin:
       statsData = getAdminDashboardStats();
       break;
-    case Role.Provider:
+    case UserRoles.Provider:
       statsData = getProviderDashboardStats(userExists.id);
       break;
     default:

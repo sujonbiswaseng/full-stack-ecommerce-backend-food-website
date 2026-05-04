@@ -14,8 +14,6 @@ interface EnvConfig {
   REFRESH_TOKEN_SECRET: string;
   ACCESS_TOKEN_EXPIRES_IN: string;
   REFRESH_TOKEN_EXPIRES_IN: string;
-  APP_USER: string;
-  APP_PASS: string;
   EMAIL: string;
   PASSWORD: string;
   GOOGLE_CLIENT_ID: string;
@@ -58,8 +56,6 @@ const loadEnvVariables = (): EnvConfig => {
     "REFRESH_TOKEN_SECRET",
     "ACCESS_TOKEN_EXPIRES_IN",
     "REFRESH_TOKEN_EXPIRES_IN",
-    "APP_USER",
-    "APP_PASS",
     "EMAIL",
     "PASSWORD",
     "GOOGLE_CLIENT_ID",
@@ -68,11 +64,11 @@ const loadEnvVariables = (): EnvConfig => {
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
-    "SMTP_USER",
-    "SMTP_PASS",
-    "SMTP_HOST",
-    "SMTP_PORT",
-    "SMTP_FROM",
+    "EMAIL_SENDER_SMTP_USER",
+    "EMAIL_SENDER_SMTP_PASS",
+    "EMAIL_SENDER_SMTP_HOST",
+    "EMAIL_SENDER_SMTP_PORT",
+    "EMAIL_SENDER_SMTP_FROM",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
     "OPENROUTER_API_KEY",
@@ -100,8 +96,6 @@ const loadEnvVariables = (): EnvConfig => {
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET as string,
     ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN as string,
     REFRESH_TOKEN_EXPIRES_IN: process.env.REFRESH_TOKEN_EXPIRES_IN as string,
-    APP_USER: process.env.APP_USER as string,
-    APP_PASS: process.env.APP_PASS as string,
     EMAIL: process.env.EMAIL as string,
     PASSWORD: process.env.PASSWORD as string,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,

@@ -3,10 +3,18 @@ import AppError from "../../errorHelper/AppError";
 import { prisma } from "../../lib/prisma";
 import { NewsletterWhereInput } from "../../../generated/prisma/models";
 import { parseDateForPrisma } from "../../utils/parseDate";
+import { IRequestUser } from "../../interface/requestUser.interface";
 
-const createNewsletter = async (payload: { email: string; userId: string }) => {
-  console.log(payload.email,'emi')
-  if (!payload.email || !payload.userId) {
+const createNewsletter = async (payload: { email: string; user:IRequestUser }) => {
+  
+  const existingUser = await prisma.user.findUnique({
+    where: { email: payload.user.email },
+  });
+  if (!existingUser) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
+
+  if (!payload.email) {
     throw new AppError(status.BAD_REQUEST, "Email and userId are required to subscribe to the newsletter.");
   }
 
@@ -20,7 +28,7 @@ const createNewsletter = async (payload: { email: string; userId: string }) => {
   const newsletter = await prisma.newsletter.create({
     data: {
       email: payload.email,
-      userId: payload.userId,
+      userId:existingUser.id,
     },
   });
 

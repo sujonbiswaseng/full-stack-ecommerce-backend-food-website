@@ -8,19 +8,25 @@ import { BlogWhereInput } from "../../../generated/prisma/models";
 import { parseDateForPrisma } from "../../utils/parseDate";
 
 
-const createBlog = async (user: IRequestUser, payload: ICreateBlogInput) => {
-  const { title, content, images,eventId } = payload;
+const createBlog = async (user:IRequestUser, payload: ICreateBlogInput) => {
+  const { title, content, images,mealid } = payload;
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!existingUser) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
   if (!images || !Array.isArray(images) || images.length === 0) {
     throw new AppError(status.BAD_REQUEST, "At least one image is required to create a blog.");
   }
-    if (!eventId) {
-      throw new AppError(status.BAD_REQUEST, "Event ID is required to create a blog.");
+    if (!mealid) {
+      throw new AppError(status.BAD_REQUEST, "mealid ID is required to create a blog.");
     }
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
+    const meal = await prisma.meal.findUnique({
+      where: { id: mealid },
     });
-    if (!event) {
-      throw new AppError(status.BAD_REQUEST, "The provided eventId does not correspond to any existing event.");
+    if (!meal) {
+      throw new AppError(status.BAD_REQUEST, "The provided mealid does not correspond to any existing mealid.");
     }
   
   if (!title || !content || !images) {
@@ -31,8 +37,8 @@ const createBlog = async (user: IRequestUser, payload: ICreateBlogInput) => {
       title,
       content,
       images,
-      authorId: user.userId,
-      eventId:event.id
+      authorId: existingUser.id,
+      mealid:meal.id
     },
   });
   return blog;
@@ -90,7 +96,7 @@ const getAllBlogs = async (
     orderBy: { [sortBy!]: sortOrder },
     include: {
       author: { select: { id: true, name: true, email: true, image: true } },
-      event:true
+      meal:true
     },
   });
   const total = await prisma.blog.count({ where :{AND:andConditions}});
@@ -110,7 +116,7 @@ const getSingleBlog = async (blogId: string) => {
     where: { id: blogId },
     include: {
       author: { select: { id: true, name: true, email: true, image: true } },
-      event:true,
+      meal:true,
 
     },
   });
@@ -121,13 +127,20 @@ const getSingleBlog = async (blogId: string) => {
 };
 
 const updateBlog = async (blogId: string, payload: IUpdateBlogInput, user: IRequestUser) => {
+  // Check user by email
+  const userFromDb = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!userFromDb) {
+    throw new AppError(404, "User not found");
+  }
   const blog = await prisma.blog.findUnique({
     where: { id: blogId },
   });
   if (!blog) {
     throw new AppError(404, "Blog not found");
   }
-  if (user.role !== "ADMIN" && blog.authorId !== user.userId) {
+  if (userFromDb.role !== "Admin" && blog.authorId !== user.id) {
     throw new AppError(403, "You are not authorized to update this blog");
   }
   const updatedBlog = await prisma.blog.update({
@@ -142,13 +155,19 @@ const updateBlog = async (blogId: string, payload: IUpdateBlogInput, user: IRequ
 };
 
 const deleteBlog = async (user: IRequestUser, blogId: string) => {
+  const userFromDb = await prisma.user.findUnique({
+    where: { email: user.email },
+  });
+  if (!userFromDb) {
+    throw new AppError(404, "User not found");
+  }
   const blog = await prisma.blog.findUnique({
     where: { id: blogId },
   });
   if (!blog) {
     throw new AppError(404, "Blog not found");
   }
-  if (user.role !== "ADMIN" && blog.authorId !== user.userId) {
+  if (userFromDb.role !== "Admin" && blog.authorId !== userFromDb.id) {
     throw new AppError(403, "You are not authorized to delete this blog");
   }
   const deletedBlog = await prisma.blog.delete({

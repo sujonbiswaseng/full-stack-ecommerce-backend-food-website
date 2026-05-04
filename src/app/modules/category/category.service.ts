@@ -4,8 +4,8 @@ import { UpdatecategoryData } from "./category.validation";
 import { ICreateCategory, IUpdateCategory } from "./category.interface";
 import AppError from "../../errorHelper/AppError";
 import status from "http-status";
-import { CategoryWhereInput } from "../../../../generated/prisma/models";
 import { parseDateForPrisma } from "../../utils/parseDate";
+import { CategoryWhereInput } from "../../../generated/prisma/models";
 const CreateCategory = async (data: ICreateCategory, email: string) => {
   if(!data.image){
     throw new AppError(404, "Image is required");

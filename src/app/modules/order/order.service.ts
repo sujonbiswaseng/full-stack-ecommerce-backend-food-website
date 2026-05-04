@@ -1,13 +1,15 @@
 import { v6 as uuidv6 } from "uuid";
-import { Order, Orderitem } from "../../../../generated/prisma/client";
+
 import { prisma } from "../../lib/prisma";
 import AppError from "../../errorHelper/AppError";
 import status from "http-status";
 import { ICreateorderData } from "./order.interface";
-import { OrderWhereInput } from "../../../../generated/prisma/models";
+
 import { parseDateForPrisma } from "../../utils/parseDate";
 import { envVars } from "../../config/env";
 import { stripe } from "../../config/stripe.config";
+import { OrderWhereInput } from "../../../generated/prisma/models";
+import { Order } from "../../../generated/prisma/client";
 const CreateOrder = async (payload: ICreateorderData, email: string) => {
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (!existingUser) throw new AppError(404, "User not found");

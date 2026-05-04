@@ -5,10 +5,11 @@ import status from "http-status";
 import paginationSortingHelper from "../../helpers/paginationHelping";
 import { HighlightServices } from "./highlight.service";
 import AppError from "../../errorHelper/AppError";
+import { IRequestUser } from "../../interface/requestUser.interface";
 
 // Create a new highlight
 const createHighlight = catchAsync(async (req: Request, res: Response) => {
-  if (!req.user?.userId) {
+  if (!req.user?.email) {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access. Please login first.");
   }
 
@@ -17,7 +18,7 @@ const createHighlight = catchAsync(async (req: Request, res: Response) => {
     image: req.file?.path || req.body.image,
   };
   const user = req.user;
-  const result = await HighlightServices.createHighlight(user, payload);
+  const result = await HighlightServices.createHighlight(user as IRequestUser, payload);
 
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -68,7 +69,7 @@ const updateHighlight = catchAsync(async (req: Request, res: Response) => {
     ...(req.body.image !== undefined && { image: req.body.image }),
   };
 
-  const result = await HighlightServices.updateHighlight(id as string, payload, req.user);
+  const result = await HighlightServices.updateHighlight(id as string, payload, req.user as IRequestUser);
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
@@ -80,7 +81,7 @@ const updateHighlight = catchAsync(async (req: Request, res: Response) => {
 // Delete a highlight by ID
 const deleteHighlight = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await HighlightServices.deleteHighlight(req.user, id as string);
+  const result = await HighlightServices.deleteHighlight(req.user as IRequestUser, id as string);
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,

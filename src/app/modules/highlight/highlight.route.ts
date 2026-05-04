@@ -10,7 +10,6 @@ import auth from '../../middleware/auth';
 
 const router = Router();
 
-// Routes for highlight CRUD
 router.post(
   "/highlight",
   auth([UserRoles.Admin]),

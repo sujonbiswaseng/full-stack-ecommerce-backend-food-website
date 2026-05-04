@@ -5,10 +5,11 @@ import status from "http-status";
 import paginationSortingHelper from "../../helpers/paginationHelping";
 import { BlogServices } from "./blog.service";
 import AppError from "../../errorHelper/AppError";
+import { IRequestUser } from "../../interface/requestUser.interface";
 
 // Create a new blog post
 const createBlog = catchAsync(async (req: Request, res: Response) => {
-  if (!req.user?.userId) {
+  if (!req.user?.email) {
     throw new AppError(status.UNAUTHORIZED, "Unauthorized access. Please login first.");
   }
   const files = req.files as Express.Multer.File[];
@@ -19,7 +20,7 @@ const createBlog = catchAsync(async (req: Request, res: Response) => {
   };
 
   const user = req.user;
-  const result = await BlogServices.createBlog(user, payload);
+  const result = await BlogServices.createBlog(user as IRequestUser, payload);
 
   sendResponse(res, {
     httpStatusCode: status.CREATED,
@@ -55,7 +56,7 @@ const getSingleBlog = catchAsync(async (req: Request, res: Response) => {
 // Update a blog post by ID
 const updateBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await BlogServices.updateBlog(id as string, req.body,req.user);
+  const result = await BlogServices.updateBlog(id as string, req.body,req.user as IRequestUser);
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
@@ -67,7 +68,7 @@ const updateBlog = catchAsync(async (req: Request, res: Response) => {
 // Delete a blog post by ID
 const deleteBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-  const result = await BlogServices.deleteBlog(req.user,id as string);
+  const result = await BlogServices.deleteBlog(req.user as IRequestUser,id as string);
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,

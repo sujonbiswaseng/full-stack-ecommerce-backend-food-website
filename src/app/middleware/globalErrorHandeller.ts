@@ -2,7 +2,7 @@ import status from "http-status";
 import AppError from "../errorHelper/AppError";
 import { TErrorSources } from "../interface/error.interface";
 import { NextFunction, Request, Response } from "express";
-import { Prisma } from "../../../generated/prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 
 function errorHandler (err: any, req: Request, res: Response, next: NextFunction) {
     let statusCode: number = status.INTERNAL_SERVER_ERROR; // Default 500
