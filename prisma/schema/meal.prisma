@@ -1,9 +1,11 @@
 model Meal {
   id                String            @id @default(uuid())
-  meals_name        String            @db.VarChar(100)
+  title        String            @db.VarChar(100)
   description       String?
-  image             String?
+  images             String[]
   price             Int
+  date         DateTime      
+  location        String
   isAvailable       Boolean           @default(true)
   dietaryPreference DietaryPreference @default(HALAL)
   providerId        String
@@ -18,6 +20,7 @@ model Meal {
   orderitem         Orderitem[]
   reviews           Review[]
   payment           Payment[]
+  blogs              Blog[]
 
   @@map("meal")
 }

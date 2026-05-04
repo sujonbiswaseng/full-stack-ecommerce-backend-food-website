@@ -18,6 +18,9 @@ model User {
   provider      ProviderProfile?
   reviews       Review[]
   sessions      Session[]
+  highlights    Highlight[]
+  blogs        Blog[]
+  newsletter Newsletter[]
 
   @@map("user")
 }

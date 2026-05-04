@@ -11,7 +11,13 @@ router.get('/meals',mealController.Getallmeals)
 router.get('/deviveryCharge',mealController.DeviceryCharge)
 router.get('/admin/meals',auth([UserRoles.Admin]),mealController.getAllMealsForAdmin)
 router.get('/provider/meals/own',auth([UserRoles.Provider]),mealController.getownmeals)
-router.post('/provider/meal',auth([UserRoles.Provider]),multerUpload.single("file"),validateRequest(CreatemealData),mealController.createMeal)
+router.post(
+  '/provider/meal',
+  auth([UserRoles.Provider]),
+  multerUpload.array("files"),
+  validateRequest(CreatemealData),
+  mealController.createMeal
+)
 router.delete('/provider/meal/:id',auth([UserRoles.Provider,UserRoles.Admin]),mealController.DeleteMeals)
 router.put('/provider/meal/:id',auth([UserRoles.Provider]),multerUpload.single("file"),validateRequest(UpdatemealData),mealController.UpdateMeals)
 router.get('/meal/:id',mealController.GetSignlemeals)

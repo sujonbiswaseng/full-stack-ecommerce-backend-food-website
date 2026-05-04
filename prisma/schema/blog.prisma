@@ -1,0 +1,14 @@
+model Blog {
+  id          String    @id @default(cuid())
+
+  title       String
+  content     String
+  images       String[]
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id] ,onDelete: Cascade, onUpdate: Cascade)
+  mealid    String 
+  meal      Meal?   @relation(fields: [mealid], references: [id], onDelete: Cascade, onUpdate: Cascade)  
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
