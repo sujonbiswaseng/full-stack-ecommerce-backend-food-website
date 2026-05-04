@@ -11,10 +11,12 @@ const createMeal = catchAsync(async (req: Request, res: Response) => {
       .status(401)
       .json({ success: false, message: "you are unauthorized" });
   }
+  const files = req.files as Express.Multer.File[];
+
   const payload = {
     ...req.body,
-    image:req.file?.path || req.body.image
-};
+    images: files?.length ? files.map((file) => file.path) : req.body.images,
+  };
   const result = await mealService.createMeal(payload, user.email as string);
   sendResponse(res, {
     httpStatusCode: status.CREATED,

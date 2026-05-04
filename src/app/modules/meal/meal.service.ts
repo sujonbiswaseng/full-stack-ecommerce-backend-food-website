@@ -1,8 +1,4 @@
-import { Result } from '../../../../generated/prisma/internal/prismaNamespace';
-import { prisma } from "../../lib/prisma";
-import { MealWhereInput } from "../../../../generated/prisma/models";
-import { DietaryPreference } from "../../../../generated/prisma/enums";
-import { Meal } from "../../../../generated/prisma/client";
+
 import {
   ICreateMealsData,
   IMealQueryRequest,
@@ -12,9 +8,12 @@ import {
 import AppError from "../../errorHelper/AppError";
 import status from "http-status";
 import { parseDateForPrisma } from '../../utils/parseDate';
+import { prisma } from "../../lib/prisma";
+import { MealWhereInput } from "../../../generated/prisma/models";
+import { DietaryPreference } from "../../../generated/prisma/enums";
 
 const createMeal = async (data: ICreateMealsData, email: string) => {
-  if(!data.image){
+  if(!data.images){
     throw new AppError(404, "Image is required");
   }
   const providerid = await prisma.user.findUnique({
@@ -280,9 +279,9 @@ const UpdateMeals = async (data: IUpdateMealsData, mealid: string) => {
       id: mealid,
     },
     data: {
-      meals_name: data.meals_name,
+      title: data.title,
     description: data.description,
-    ...(data.image !== null && typeof data.image !== "undefined" ? { image: data.image } : {}),
+    ...(data.images !== null && typeof data.images !== "undefined" ? { image: data.images } : {}),
     price: data.price,
     isAvailable: data.isAvailable,
     category_name: data.category_name,
