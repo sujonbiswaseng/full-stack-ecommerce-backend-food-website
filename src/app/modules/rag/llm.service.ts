@@ -1,187 +1,88 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { envVars } from "../../config/env";
-
-type GenerateOptions = {
-  asJson?: boolean;
-  maxTokens?: number;
-  temperature?: number;
-};
 
 export class LLMService {
   private apiKey: string;
-  private apiUrl = "https://openrouter.ai/api/v1";
+  private apiUrl: string = "https://openrouter.ai/api/v1";
   private model: string;
 
   constructor() {
     this.apiKey = envVars.RAG.OPENROUTER_API_KEY;
-    this.model = envVars.RAG.OPENROUTER_LLM_MODEL;
+    this.model =
+      envVars.RAG.OPENROUTER_LLM_MODEL ;
 
     if (!this.apiKey) {
-      throw new Error(" OpenRouter API key is missing");
+      throw new Error("OpenRouter api key is missing...");
     }
   }
 
   async generateResponse(
     prompt: string,
     context: string[] = [],
-    options: GenerateOptions = {}
-  ): Promise<string> {
-    const {
-      asJson = false,
-      maxTokens = 1200,
-      temperature = 0.2,
-    } = options;
-
+    asJson: boolean = false,
+  ) {
     try {
-      const fullPrompt = this.buildPrompt(prompt, context, asJson);
+      // Combine context with prompt for RAG
+      let fullPrompt =
+        context.length > 0
+          ? `Context information:\n${context.join("\n\n")}\n\nQuestion: ${prompt}\n\nAnswer based on the context above.`
+          : prompt;
 
-      const response = await this.callLLM({
-        prompt: fullPrompt,
-        asJson,
-        maxTokens,
-        temperature,
+      if (asJson) {
+        fullPrompt += `\n\nReturn ONLY a valid JSON object matching this structure: {"meal": [{"title": "meal title", "description": "meal description", "id": "id"}]}. Do not include any markdown formatting like \`\`\`json.`;
+      }
+
+      const systemMessage = asJson
+        ? "You are a helpful assistant for a healthcare management system. Answer questions based on the provided context. You MUST respond with ONLY valid JSON format. Do not include markdown tags."
+        : "You are a helpful assistant for a healthcare management system. Answer questions based on the provided context. If the context does not contain the answer, say you don't have enough information.";
+
+      const bodyPayload: any = {
+        model: this.model,
+        messages: [
+          {
+            role: "system",
+            content: systemMessage,
+          },
+          {
+            role: "user",
+            content: fullPrompt,
+          },
+        ],
+        temperature: 0.1, // Lower temperature for more deterministic JSON
+        max_tokens: 1500,
+      };
+
+      if (
+        asJson &&
+        (this.model.includes("gpt") || this.model.includes("openai"))
+      ) {
+        bodyPayload.response_format = { type: "json_object" };
+      }
+
+      const response = await fetch(`${this.apiUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://lumen-management.local",
+          "X-Title": "lumen Management System",
+        },
+        body: JSON.stringify(bodyPayload),
       });
 
-      return response;
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `OpenRouter API error: ${response.status} - ${errorData.error?.message} || "unknown error"`,
+        );
+      }
+
+      const data = await response.json();
+
+      return data.choices[0].message.content;
     } catch (error) {
-      console.error(" LLM generateResponse failed:", error);
+      console.error("Error generating LLM response:", error);
       throw error;
     }
-  }
-  private buildPrompt(
-    prompt: string,
-    context: string[],
-    asJson: boolean
-  ): string {
-    if (context.length === 0) return prompt;
-
-    let basePrompt = `
-You are an intelligent AI assistant for a food / meal / marketplace platform.
-
-Use ONLY the provided context to answer.
-
-If the answer is not in the context, say:
-"I don't have enough information."
-
----------------------
-CONTEXT:
-${context.join("\n\n")}
----------------------
-
-QUESTION:
-${prompt}
-`;
-
-    if (asJson) {
-      basePrompt += `
-
-Return ONLY valid JSON in this format:
-{
-  "results": [
-    {
-      "id": "string",
-      "title": "string",
-      "description": "string",
-      "rating": number,
-      "price": number
-    }
-  ]
-}
-
- Do NOT use markdown
-Do NOT explain
-✔ ONLY JSON
-`;
-    }
-
-    return basePrompt;
-  }
-  private async callLLM({
-    prompt,
-    asJson,
-    maxTokens,
-    temperature,
-  }: {
-    prompt: string;
-    asJson: boolean;
-    maxTokens: number;
-    temperature: number;
-  }): Promise<string> {
-    const body: any = {
-      model: this.model,
-      messages: [
-        {
-          role: "system",
-          content: this.getSystemMessage(asJson),
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      temperature,
-      max_tokens: maxTokens,
-    };
-
-    if (asJson && this.model.includes("gpt")) {
-      body.response_format = { type: "json_object" };
-    }
-
-    for (let attempt = 1; attempt <= 3; attempt++) {
-      try {
-        const res = await fetch(`${this.apiUrl}/chat/completions`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            "Content-Type": "application/json",
-            "HTTP-Referer": "https://your-app.com",
-            "X-Title": "AI Meal Platform",
-          },
-          body: JSON.stringify(body),
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error?.message || "Unknown API error");
-        }
-
-        const data = await res.json();
-
-        const output = data.choices?.[0]?.message?.content;
-
-        if (!output) throw new Error("Empty LLM response");
-
-        return output;
-      } catch (error) {
-        console.warn(`Retry ${attempt} failed`);
-
-        if (attempt === 3) throw error;
-      }
-    }
-
-    throw new Error("LLM failed after retries");
-  }
-
-  private getSystemMessage(asJson: boolean): string {
-    if (asJson) {
-      return `
-You are a strict JSON API generator.
-
-Rules:
-- Always return valid JSON
-- No markdown
-- No explanation
-- No extra text
-`;
-    }
-
-    return `
-You are an AI assistant for a food and meal platform.
-
-Rules:
-- Be clear and helpful
-- Use provided context only
-- Do not hallucinate
-`;
   }
 }

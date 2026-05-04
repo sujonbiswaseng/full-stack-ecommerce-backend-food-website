@@ -46,13 +46,11 @@ const queryRag = catchAsync(async (req: Request, res: Response) => {
   try {
     const cacheResult = await redisService.get(cacheKey)
     if(cacheResult){
-      // cache-hit
-      const parseData=JSON.parse(cacheResult);
-     return sendResponse(res,{
+    return  sendResponse(res,{
         success:true,
         httpStatusCode:status.OK,
         message:"Answer retrieved from cache",
-        data:parseData
+        data:cacheResult
       })
     }
   } catch (error) {
@@ -67,6 +65,7 @@ const queryRag = catchAsync(async (req: Request, res: Response) => {
     sourceType,
     true,
   );
+  console.log(result,'result')
 
   try {
    const dat= await redisService.set(cacheKey,result,600);

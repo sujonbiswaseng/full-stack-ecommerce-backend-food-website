@@ -63,7 +63,8 @@ export class RAGService {
         .map((doc: any) => doc.content);
       let answer = await this.llmService.generateResponse(
         query,
-        context
+        context,
+        asJson
       );
       
 

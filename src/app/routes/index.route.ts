@@ -8,12 +8,13 @@ import { ReviewsRouter } from "../modules/reviews/reviews.route";
 import { authRouter } from "../modules/auth/auth.route";
 import { StatsRoutes } from "../modules/stats/stats.route";
 import { PaymentRouter } from "../modules/payment/payment.route";
+import { Ragrouter } from "../modules/rag/rag.route";
 
 const router = Router()
 
 // meal
 router.use("/v1",mealRouter.router)
-
+router.use('/v1/rag',Ragrouter)
 
 
 // provider

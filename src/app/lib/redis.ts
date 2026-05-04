@@ -4,15 +4,12 @@ import { Redis } from "@upstash/redis";
 class RedisService {
     private client: Redis | null = null;
     private isConnected: boolean = false;
-
     async connect(): Promise<void> {
         try {
             this.client = new Redis({
                 url: envVars.UPSTASH_REDIS_REST_URL,
                 token: envVars.UPSTASH_REDIS_REST_TOKEN,
             });
-
-            // Upstash does not support events, so we simulate it
             this.isConnected = true;
             console.log("Redis Client Ready (Upstash)");
 
