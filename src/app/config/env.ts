@@ -37,6 +37,13 @@ interface EnvConfig {
     STRIPE_SECRET_KEY: string;
     STRIPE_WEBHOOK_SECRET: string;
   };
+  RAG:{
+    OPENROUTER_API_KEY:string;
+    OPENROUTER_EMBEDDING_MODEL:string;
+    OPENROUTER_LLM_MODEL:string;
+},
+  UPSTASH_REDIS_REST_URL: string;
+  UPSTASH_REDIS_REST_TOKEN: string;
 
 }
 
@@ -68,6 +75,11 @@ const loadEnvVariables = (): EnvConfig => {
     "SMTP_FROM",
     "STRIPE_SECRET_KEY",
     "STRIPE_WEBHOOK_SECRET",
+    "OPENROUTER_API_KEY",
+    "OPENROUTER_EMBEDDING_MODEL",
+    "OPENROUTER_LLM_MODEL",
+    "UPSTASH_REDIS_REST_URL",
+    "UPSTASH_REDIS_REST_TOKEN"
   ];
   requireEnvVariable.forEach((variable) => {
     if (!process.env[variable]) {
@@ -111,6 +123,13 @@ const loadEnvVariables = (): EnvConfig => {
       STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY as string,
       STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET as string,
     },
+    RAG:{
+      OPENROUTER_API_KEY:process.env.OPENROUTER_API_KEY as string,
+      OPENROUTER_EMBEDDING_MODEL:process.env.OPENROUTER_EMBEDDING_MODEL as string,
+      OPENROUTER_LLM_MODEL:process.env.OPENROUTER_LLM_MODEL as string,
+  },
+      UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL as string,
+      UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN as string,
       
   }
 };

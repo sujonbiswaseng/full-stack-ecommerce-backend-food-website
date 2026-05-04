@@ -1,3 +1,6 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "vector";
+
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('Customer', 'Provider', 'Admin');
 
@@ -86,6 +89,20 @@ CREATE TABLE "verification" (
 );
 
 -- CreateTable
+CREATE TABLE "Blog" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "images" TEXT[],
+    "authorId" TEXT NOT NULL,
+    "mealid" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Blog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "categories" (
     "id" TEXT NOT NULL,
     "adminId" TEXT NOT NULL,
@@ -98,12 +115,27 @@ CREATE TABLE "categories" (
 );
 
 -- CreateTable
+CREATE TABLE "highlight" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "image" TEXT,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "highlight_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "meal" (
     "id" TEXT NOT NULL,
-    "meals_name" VARCHAR(100) NOT NULL,
+    "title" VARCHAR(100) NOT NULL,
     "description" TEXT,
-    "image" TEXT,
+    "images" TEXT[],
     "price" INTEGER NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "location" TEXT NOT NULL,
     "isAvailable" BOOLEAN NOT NULL DEFAULT true,
     "dietaryPreference" "DietaryPreference" NOT NULL DEFAULT 'HALAL',
     "providerId" TEXT NOT NULL,
@@ -115,6 +147,17 @@ CREATE TABLE "meal" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "meal_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "newsletter" (
+    "id" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "newsletter_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -179,6 +222,24 @@ CREATE TABLE "providerprofile" (
 );
 
 -- CreateTable
+CREATE TABLE "document_embeddings" (
+    "id" TEXT NOT NULL,
+    "chunkKey" TEXT NOT NULL,
+    "sourceType" TEXT NOT NULL,
+    "sourceId" TEXT NOT NULL,
+    "sourceLabel" TEXT,
+    "content" TEXT NOT NULL,
+    "metadata" JSONB,
+    "embedding" vector(2048) NOT NULL,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "deletedAt" TIMESTAMP(3),
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "document_embeddings_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "review" (
     "id" TEXT NOT NULL,
     "customerId" TEXT NOT NULL,
@@ -212,6 +273,12 @@ CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 CREATE UNIQUE INDEX "categories_name_key" ON "categories"("name");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "newsletter_email_key" ON "newsletter"("email");
+
+-- CreateIndex
+CREATE INDEX "newsletter_userId_idx" ON "newsletter"("userId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Payment_stripeEventId_key" ON "Payment"("stripeEventId");
 
 -- CreateIndex
@@ -226,6 +293,15 @@ CREATE UNIQUE INDEX "providerprofile_userId_key" ON "providerprofile"("userId");
 -- CreateIndex
 CREATE UNIQUE INDEX "providerprofile_restaurantName_key" ON "providerprofile"("restaurantName");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "document_embeddings_chunkKey_key" ON "document_embeddings"("chunkKey");
+
+-- CreateIndex
+CREATE INDEX "idx_document_embeddings_sourceType" ON "document_embeddings"("sourceType");
+
+-- CreateIndex
+CREATE INDEX "idx_document_embeddings_sourceId" ON "document_embeddings"("sourceId");
+
 -- AddForeignKey
 ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -233,13 +309,25 @@ ALTER TABLE "session" ADD CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId"
 ALTER TABLE "account" ADD CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Blog" ADD CONSTRAINT "Blog_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Blog" ADD CONSTRAINT "Blog_mealid_fkey" FOREIGN KEY ("mealid") REFERENCES "meal"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "categories" ADD CONSTRAINT "categories_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "highlight" ADD CONSTRAINT "highlight_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "meal" ADD CONSTRAINT "meal_category_name_fkey" FOREIGN KEY ("category_name") REFERENCES "categories"("name") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "meal" ADD CONSTRAINT "meal_providerId_fkey" FOREIGN KEY ("providerId") REFERENCES "providerprofile"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "newsletter" ADD CONSTRAINT "newsletter_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "order" ADD CONSTRAINT "order_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "user"("id") ON DELETE CASCADE ON UPDATE CASCADE;

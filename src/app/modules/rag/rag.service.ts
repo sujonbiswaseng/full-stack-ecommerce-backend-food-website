@@ -1,3 +1,4 @@
+
 import { Prisma } from "../../../generated/prisma/client";
 import { prisma } from "../../lib/prisma";
 import { EmbeddingService } from "./embedding.service";
@@ -14,8 +15,8 @@ export class RAGService {
         this.embeddingService = new EmbeddingService();
 
     }
-    async ingestEventData() {
-        return this.indexingService.indexEventsData();
+    async ingestMealsData() {
+        return this.indexingService.indexMealsData();
     }
 
     async retieveRelevantDocuments(

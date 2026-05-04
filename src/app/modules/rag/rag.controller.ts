@@ -18,12 +18,12 @@ const getStats = catchAsync(async (req: Request, res: Response) => {
 });
 
 
-const Ingestevents=catchAsync(async(req:Request,res:Response)=>{
-   const result =await ragService.ingestEventData()
+const IngestMeals=catchAsync(async(req:Request,res:Response)=>{
+   const result =await ragService.ingestMealsData()
    console.log(result,'reselt')
    sendResponse(res,{
     success:true,
-    message:"ingest event successfully",
+    message:"ingest meals successfully",
    httpStatusCode:200,
    data:result
    })
@@ -69,7 +69,6 @@ const queryRag = catchAsync(async (req: Request, res: Response) => {
   );
 
   try {
-    // store cache with 10 min(600 secound)
    const dat= await redisService.set(cacheKey,result,600);
    console.log(dat,'da')
   } catch (error) {
@@ -83,4 +82,4 @@ const queryRag = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
-export const RagController={getStats,Ingestevents,queryRag}
+export const RagController={getStats,IngestMeals,queryRag}

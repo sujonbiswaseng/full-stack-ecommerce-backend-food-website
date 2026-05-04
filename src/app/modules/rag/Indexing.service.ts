@@ -10,23 +10,24 @@ export class IndexingService {
   constructor() {
     this.embeddingService = new EmbeddingService();
   }
-
   async indexDocument(
     chunkKey: string,
     sourceType: string,
     sourceId: string,
     content: string,
     sourceLabel?: string,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ) {
     try {
-      const embedding = await this.embeddingService.generateEmbedding(content);
+      const embedding =
+        await this.embeddingService.generateEmbedding(content);
+
       const vectorLiteral = toVectorLiteral(embedding);
 
       await prisma.$executeRaw(Prisma.sql`
         INSERT INTO "document_embeddings"
         (
-            "id",
+          "id",
           "chunkKey",
           "sourceType",
           "sourceId",
@@ -38,19 +39,19 @@ export class IndexingService {
         )
         VALUES
         (
-            ${Prisma.raw("gen_random_uuid()")},
-            ${chunkKey},
+          ${Prisma.raw("gen_random_uuid()")},
+          ${chunkKey},
           ${sourceType},
           ${sourceId},
           ${sourceLabel || null},
           ${content},
-          ${JSON.stringify(metadata || {})} :: jsonb,
+          ${JSON.stringify(metadata || {})}::jsonb,
           CAST(${vectorLiteral} AS vector),
           NOW()
         )
         ON CONFLICT ("chunkKey")
         DO UPDATE SET
-            "sourceType" = EXCLUDED."sourceType",
+          "sourceType" = EXCLUDED."sourceType",
           "sourceId" = EXCLUDED."sourceId",
           "sourceLabel" = EXCLUDED."sourceLabel",
           "content" = EXCLUDED."content",
@@ -59,31 +60,38 @@ export class IndexingService {
           "isDeleted" = false,
           "deletedAt" = null,
           "updatedAt" = NOW()
-        `);
+      `);
     } catch (error) {
-      console.log(error);
+      console.error("❌ Index document error:", error);
       throw error;
     }
   }
 
-  async indexEventsData() {
-    try {
-      console.log("Fetching events data for indexing...");
 
-      const events = await prisma.event.findMany({
+  async indexMealsData() {
+    try {
+      console.log("Fetching meals for indexing...");
+
+      const meals = await prisma.meal.findMany({
         include: {
-          reviews: true,
           blogs: true,
-          participants: true,
-          payments:true,
-          category:true,
-          invitations: true,
-          organizer: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              role: true,
+          orderitem: {
+            include: {
+              order: true,
+            },
+          },
+          category: true,
+          provider: {
+            include: { user: true },
+          },
+          reviews: {
+            where: {
+              parentId: null,
+              rating: { gt: 0 },
+              status: "APPROVED",
+            },
+            include: {
+              customer: true,
             },
           },
         },
@@ -91,132 +99,132 @@ export class IndexingService {
 
       let indexedCount = 0;
 
-      for (const event of events) {
-        const blogsText = event.blogs
-          .map(
-            (blog) => `
-            
-  Blog Title:
-  ${blog.title}
-  
-  Blog Content:
-  ${blog.content}
-  
-  Published At:
-  ${blog.createdAt}
-  `,
-          )
-          .join("\n");
-        const reviewsText = event.reviews
-          .map(
-            (review) => `
-  Rating:
-  ${review.rating}/5
-  
-  Comment:
-  ${review.comment || "No comment"}
-  `,
-          )
-          .join("\n");
-        const participantsText = `
-  Total Participants:
-  ${event.participants.length}
-  `;
+      for (const meal of meals) {
 
-        const invitationsText = `
-  Total Invitations:
-  ${event.invitations.length}
-  `;
+
+        const orders = meal.orderitem.map((oi) => oi.order);
+
+        const totalOrders = orders.length;
+
+        const totalRevenue = orders.reduce((sum, order) => {
+          return sum + (order.totalPrice || 0);
+        }, 0);
+
+        const totalReviews = meal.reviews.length;
+
+        const avgRating =
+          totalReviews > 0
+            ? meal.reviews.reduce((sum, r) => sum + r.rating, 0) /
+              totalReviews
+            : 0;
+
+        const reviewsText = meal.reviews
+          .map(
+            (r) => `
+Rating: ${r.rating}/5
+Comment: ${r.comment || "No comment"}
+Customer: ${r.customer?.name || "Anonymous"}
+`
+          )
+          .join("\n");
+
+        const blogsText = meal.blogs
+          .map(
+            (b) => `
+Title: ${b.title}
+Content: ${b.content}
+Published: ${b.createdAt}
+`
+          )
+          .join("\n");
+
         const content = `
-        owner name : sujon biswas
-        id:${event.id}
-        
-  Event Title:
-  ${event.title}
-  
-  Description:
-  ${event.description}
-  
-  Category:
-  ${event.category_name}
-  
-  Location:
-  ${event.location}
-  
-  Event Date:
-  ${event.date}
-  
-  Event Time:
-  ${event.time}
-  
-  Visibility:
-  ${event.visibility}
-  
-  Price Type:
-  ${event.priceType}
-  
-  Ticket Fee:
-  $${event.fee}
-  
-  Status:
-  ${event.status}
-  
-  Featured Event:
-  ${event.is_featured ? "Yes" : "No"}
-  
-  Organizer Information:
-  Organizer Name: ${event.organizer?.name || "Unknown"}
-  Organizer Email: ${event.organizer?.email || "Unknown"}
-  Organizer Role: ${event.organizer?.role || "USER"}
-  
-  ${participantsText}
-  
-  ${invitationsText}
-  
-  Event Reviews:
-  ${reviewsText || "No reviews yet."}
-  
-  Related Blogs:
-  ${blogsText || "No blogs available."}
-  `;
+
+ID: ${meal.id}
+Title: ${meal.title}
+Description: ${meal.description || "No description"}
+
+Category: ${meal.category_name}
+Cuisine: ${meal.cuisine}
+Dietary: ${meal.dietaryPreference}
+
+Location: ${meal.location}
+Date: ${meal.date}
+
+Price: ${meal.price} BDT
+Delivery Charge: ${meal.deliverycharge} BDT
+Availability: ${meal.isAvailable ? "Available" : "Not Available"}
+Status: ${meal.status}
+
+Name: ${meal.provider?.user?.name || "Unknown"}
+Email: ${meal.provider?.user?.email || "Unknown"}
+
+
+Total Orders: ${totalOrders}
+Total Revenue: ${totalRevenue} BDT
+
+Total Reviews: ${totalReviews}
+Average Rating: ${avgRating.toFixed(2)} / 5
+
+Performance Level:
+${
+  totalRevenue > 10000
+    ? "High Earning Meal"
+    : totalRevenue > 5000
+    ? "Moderate Performance"
+    : "Low Performance"
+}
+
+===== REVIEWS =====
+${reviewsText || "No reviews"}
+
+===== BLOGS =====
+${blogsText || "No blogs"}
+`;
+
         const metadata = {
-          eventId: event.id,
-          title: event.title,
-          category: event.category_name,
-          location: event.location,
-          visibility: event.visibility,
-          priceType: event.priceType,
-          fee: event.fee,
-          status: event.status,
-          featured: event.is_featured,
-          totalReviews: event.reviews.length,
-          totalBlogs: event.blogs.length,
-          totalParticipants: event.participants.length,
-          totalInvitations: event.invitations.length,
-          organizerRole: event.organizer?.role,
+          mealId: meal.id,
+          title: meal.title,
+          category: meal.category_name,
+          cuisine: meal.cuisine,
+          location: meal.location,
+          price: meal.price,
+          isAvailable: meal.isAvailable,
+
+          totalOrders,
+          totalRevenue,
+
+          totalReviews,
+          avgRating,
+
+          providerId: meal.providerId,
+          providerRole: meal.provider?.user?.role || "USER",
+
+          createdAt: meal.createdAt,
         };
-        const chunkKey = `event-${event.id}`;
+
+        const chunkKey = `meal-${meal.id}`;
+
         await this.indexDocument(
           chunkKey,
-          "EVENT",
-          event.id,
+          "MEAL",
+          meal.id,
           content,
-          event.title,
-          metadata,
+          meal.title,
+          metadata
         );
 
         indexedCount++;
       }
 
-      console.log(`Successfully indexed ${indexedCount} events.`);
+      console.log(`Indexed ${indexedCount} meals successfully`);
 
       return {
         success: true,
-        message: `Successfully indexed ${indexedCount} events.`,
         indexedCount,
       };
     } catch (error) {
-      console.log(error);
+      console.error(" Indexing failed:", error);
       throw error;
     }
   }
