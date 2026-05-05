@@ -160,9 +160,6 @@ const SingleCategory = async (id: string) => {
 const UpdateCategory = async (id: string, data: IUpdateCategory) => {
  
   const { name } = data;
-  if(!data.image){
-    throw new AppError(404, "Image is required");
-  }
   const existcategory = await prisma.category.findUniqueOrThrow({
     where: { id },
   });

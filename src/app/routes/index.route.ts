@@ -18,9 +18,10 @@ const router = Router()
 // meal
 router.use("/v1",mealRouter.router)
 router.use('/v1/rag',Ragrouter)
+
 router.use('/v1/newsletter',NewsletterRouters);
 router.use('/v1',BlogRouters);
-router.use('/v1/highlight', HighlightRouters);
+router.use('/v1', HighlightRouters);
 
 
 

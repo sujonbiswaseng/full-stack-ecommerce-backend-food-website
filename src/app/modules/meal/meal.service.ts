@@ -252,6 +252,7 @@ const getSinglemeals = async (id: string) => {
       ? Number((providerRatingSum / providerTotalReviews).toFixed(1))
       : 0;
 
+      console.log(result,'result')
   return {
     ...result,
     avgRating: mealAvgRating,

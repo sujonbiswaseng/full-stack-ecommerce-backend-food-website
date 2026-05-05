@@ -17,6 +17,7 @@ const CreateCategory = catchAsync(
       ...req.body,
       image:req.file?.path || req.body.image
   };
+  console.log(payload,'payloadi')
     const result = await categoryService.CreateCategory(
       payload,
       user.email as string,

@@ -11,7 +11,7 @@ const router=Router()
 router.post("/admin/category",auth([UserRoles.Admin]),multerUpload.single("file"),validateRequest(createcategoryData),CategoryController.CreateCategory)
 router.get("/category",CategoryController.getCategory)
 router.get("/category/:id",CategoryController.SingleCategory)
-router.put("/admin/category/:id",auth([UserRoles.Admin]),validateRequest(UpdatecategoryData),CategoryController.UpdateCategory)
+router.put("/admin/category/:id",auth([UserRoles.Admin]),multerUpload.single("file"),validateRequest(UpdatecategoryData),CategoryController.UpdateCategory)
 router.delete("/admin/category/:id",auth([UserRoles.Admin]),CategoryController.DeleteCategory)
 
 export const CategoryRouter={router}

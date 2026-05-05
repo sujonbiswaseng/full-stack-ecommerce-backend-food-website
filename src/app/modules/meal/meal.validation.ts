@@ -5,7 +5,7 @@ export const CreatemealData = z
     title: z.string(),
     description: z.string().optional(),
     location: z.string().min(3, "Location is required"),
-    images: z.array(z.string()).default([]),
+    images:z.array(z.string()).default([]),
     date: z
     .string()
     .refine((val) => !isNaN(Date.parse(val)), {

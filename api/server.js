@@ -896,7 +896,7 @@ function errorHandler(err, req, res, next) {
 var globalErrorHandeller_default = errorHandler;
 
 // src/app/routes/index.route.ts
-import { Router as Router10 } from "express";
+import { Router as Router13 } from "express";
 
 // src/app/modules/meal/meal.route.ts
 import { Router } from "express";
@@ -1240,6 +1240,7 @@ var getSinglemeals = async (id) => {
     providerRatingSum += ratingReviews.reduce((sum, r) => sum + r.rating, 0);
   });
   const providerAvgRating = providerTotalReviews > 0 ? Number((providerRatingSum / providerTotalReviews).toFixed(1)) : 0;
+  console.log(result, "result");
   return {
     ...result,
     avgRating: mealAvgRating,
@@ -1439,13 +1440,13 @@ var getOwnMeals = async (email, data, isAvailable, page, limit, skip, sortBy, so
   };
 };
 var updateStatus = async (data, mealid) => {
-  const { status: status23 } = data;
+  const { status: status29 } = data;
   const existmeal = await prisma.meal.findUnique({
     where: {
       id: mealid
     }
   });
-  if (existmeal?.status === status23) {
+  if (existmeal?.status === status29) {
     throw new AppError_default(409, "meal status already up to date");
   }
   if (existmeal?.id !== mealid) {
@@ -1456,7 +1457,7 @@ var updateStatus = async (data, mealid) => {
       id: mealid
     },
     data: {
-      status: status23
+      status: status29
     }
   });
   return result;
@@ -2674,7 +2675,7 @@ var getOwnPaymentService = async (id, data, email) => {
   return orderres;
 };
 var UpdateOrderStatus = async (id, data, role) => {
-  const { status: status23 } = data;
+  const { status: status29 } = data;
   const statusValue = [
     "PLACED",
     "PREPARING",
@@ -2682,20 +2683,20 @@ var UpdateOrderStatus = async (id, data, role) => {
     "DELIVERED",
     "CANCELLED"
   ];
-  if (!statusValue.includes(status23)) {
+  if (!statusValue.includes(status29)) {
     throw new AppError_default(400, "invalid status value");
   }
   const existingOrder = await prisma.order.findUnique({ where: { id } });
   if (!existingOrder) {
     throw new AppError_default(404, "no order found for this id");
   }
-  if (existingOrder?.status == status23) {
-    throw new AppError_default(409, `order already ${status23}`);
+  if (existingOrder?.status == status29) {
+    throw new AppError_default(409, `order already ${status29}`);
   }
-  if (role == "Customer" && status23 !== "CANCELLED") {
+  if (role == "Customer" && status29 !== "CANCELLED") {
     throw new AppError_default(400, "Customer can only change status to CANCELLED");
   }
-  if (role == "Customer" && status23 == "CANCELLED") {
+  if (role == "Customer" && status29 == "CANCELLED") {
     if (existingOrder?.status == "DELIVERED" || existingOrder?.status == "PREPARING" || existingOrder?.status == "READY") {
       throw new AppError_default(
         400,
@@ -2707,22 +2708,22 @@ var UpdateOrderStatus = async (id, data, role) => {
         id
       },
       data: {
-        status: status23
+        status: status29
       }
     });
     return result;
   }
-  if (role == "Provider" && status23 === "CANCELLED") {
+  if (role == "Provider" && status29 === "CANCELLED") {
     throw new AppError_default(400, "CANCELLED only Customer Change");
   }
   if (role == "Provider") {
-    if (status23 == "PLACED" || status23 == "PREPARING" || status23 == "READY" || status23 == "DELIVERED") {
+    if (status29 == "PLACED" || status29 == "PREPARING" || status29 == "READY" || status29 == "DELIVERED") {
       const result = await prisma.order.update({
         where: {
           id
         },
         data: {
-          status: status23
+          status: status29
         }
       });
       return {
@@ -2738,7 +2739,7 @@ var UpdateOrderStatus = async (id, data, role) => {
         id
       },
       data: {
-        status: status23
+        status: status29
       }
     });
     return {
@@ -2854,21 +2855,21 @@ var customerOrderStatusTrack = async (mealid, userid) => {
     result: existingOrder
   };
 };
-var CustomerRunningAndOldOrder = async (userid, status23) => {
+var CustomerRunningAndOldOrder = async (userid, status29) => {
   const andConditions = [];
   let message = "customer running and old order retrieve successfully";
-  let currentStatus = status23;
-  if (status23 == "DELIVERED") {
-    andConditions.push({ status: status23 });
-    message = "Recent order information retrieved successfully.", currentStatus = status23;
+  let currentStatus = status29;
+  if (status29 == "DELIVERED") {
+    andConditions.push({ status: status29 });
+    message = "Recent order information retrieved successfully.", currentStatus = status29;
   }
-  if (status23 == "CANCELLED") {
-    andConditions.push({ status: status23 });
-    message = "CANCELLED order information retrieved successfully.", currentStatus = status23;
+  if (status29 == "CANCELLED") {
+    andConditions.push({ status: status29 });
+    message = "CANCELLED order information retrieved successfully.", currentStatus = status29;
   }
-  if (status23 == "PLACED" || status23 == "PREPARING" || status23 == "READY") {
-    andConditions.push({ status: status23 });
-    message = "running order retrieved successfully.", currentStatus = status23;
+  if (status29 == "PLACED" || status29 == "PREPARING" || status29 == "READY") {
+    andConditions.push({ status: status29 });
+    message = "running order retrieved successfully.", currentStatus = status29;
   }
   const result = await prisma.order.findMany({
     where: {
@@ -3282,9 +3283,6 @@ var SingleCategory = async (id) => {
 };
 var UpdateCategory = async (id, data) => {
   const { name } = data;
-  if (!data.image) {
-    throw new AppError_default(404, "Image is required");
-  }
   const existcategory = await prisma.category.findUniqueOrThrow({
     where: { id }
   });
@@ -3328,6 +3326,7 @@ var CreateCategory2 = catchAsync(
       ...req.body,
       image: req.file?.path || req.body.image
     };
+    console.log(payload, "payloadi");
     const result = await categoryService.CreateCategory(
       payload,
       user.email
@@ -3406,7 +3405,7 @@ var router4 = Router4();
 router4.post("/admin/category", auth_default([UserRoles.Admin]), multerUpload.single("file"), validateRequest(createcategoryData), CategoryController.CreateCategory);
 router4.get("/category", CategoryController.getCategory);
 router4.get("/category/:id", CategoryController.SingleCategory);
-router4.put("/admin/category/:id", auth_default([UserRoles.Admin]), validateRequest(UpdatecategoryData), CategoryController.UpdateCategory);
+router4.put("/admin/category/:id", auth_default([UserRoles.Admin]), multerUpload.single("file"), validateRequest(UpdatecategoryData), CategoryController.UpdateCategory);
 router4.delete("/admin/category/:id", auth_default([UserRoles.Admin]), CategoryController.DeleteCategory);
 var CategoryRouter = { router: router4 };
 
@@ -3840,7 +3839,7 @@ var getReviewByid = async (reviewid) => {
   return result;
 };
 var moderateReview = async (id, data) => {
-  const { status: status23 } = data;
+  const { status: status29 } = data;
   const reviewData = await prisma.review.findUnique({
     where: {
       id
@@ -3861,7 +3860,7 @@ var moderateReview = async (id, data) => {
       id
     },
     data: {
-      status: status23
+      status: status29
     }
   });
   return result;
@@ -4807,7 +4806,40 @@ var getProviderDashboardStats = async (userId) => {
     throw new Error("Could not fetch provider dashboard stats");
   }
 };
-var statsService = { getDashboardStatsData };
+var getPublicStatsData = async () => {
+  try {
+    const totalmeals = await prisma.meal.count();
+    const totalUsers = await prisma.user.count();
+    const totalCustomer = await prisma.user.count({
+      where: { role: "Customer" }
+    });
+    const totalprovider = await prisma.user.count({
+      where: { role: "Provider" }
+    });
+    const totalAdmins = await prisma.user.count({
+      where: { role: "Admin" }
+    });
+    const totalorders = await prisma.order.count();
+    const totalcategory = await prisma.category.count();
+    const totalReviews = await prisma.review?.count?.({ where: { status: "APPROVED", parentId: null } }) ?? 0;
+    const totalNewsletters = await prisma.newsletter?.count?.() ?? 0;
+    return {
+      totalmeals,
+      totalUsers,
+      totalCustomer,
+      totalprovider,
+      totalAdmins,
+      totalorders,
+      totalcategory,
+      totalReviews,
+      totalNewsletters
+    };
+  } catch (error) {
+    console.error("Failed to fetch public stats:", error);
+    throw new Error("Could not fetch public stats");
+  }
+};
+var statsService = { getDashboardStatsData, getPublicStatsData };
 
 // src/app/modules/stats/stats.controller.ts
 var getDashboardStatsData2 = catchAsync(async (req, res) => {
@@ -4826,8 +4858,19 @@ var getDashboardStatsData2 = catchAsync(async (req, res) => {
     data: result
   });
 });
+var getPublicStatsData2 = catchAsync(async (req, res) => {
+  const user = req.user;
+  const result = await statsService.getPublicStatsData();
+  sendResponse(res, {
+    httpStatusCode: status20.OK,
+    success: true,
+    message: "Stats data retrieved successfully!",
+    data: result
+  });
+});
 var StatsController = {
-  getDashboardStatsData: getDashboardStatsData2
+  getDashboardStatsData: getDashboardStatsData2,
+  getPublicStatsData: getPublicStatsData2
 };
 
 // src/app/modules/stats/stats.route.ts
@@ -4836,6 +4879,10 @@ router8.get(
   "/stats",
   auth_default([UserRoles.Admin, UserRoles.Provider]),
   StatsController.getDashboardStatsData
+);
+router8.get(
+  "/publicstats",
+  StatsController.getPublicStatsData
 );
 var StatsRoutes = router8;
 
@@ -5794,19 +5841,801 @@ router10.post("/ingest-meals", RagController.IngestMeals);
 router10.post("/query", RagController.queryRag);
 var Ragrouter = router10;
 
-// src/app/routes/index.route.ts
+// src/app/modules/blog/blog.route.ts
+import { Router as Router10 } from "express";
+
+// src/app/modules/blog/blog.validation.ts
+import { z as z8 } from "zod";
+var createBlogSchema = z8.object({
+  title: z8.string().min(1, { message: "Title is required." }),
+  content: z8.string().min(1, { message: "Content is required." }),
+  images: z8.array(z8.string()).default([]),
+  mealid: z8.string()
+});
+var updateBlogSchema = z8.object({
+  title: z8.string().min(1, { message: "Title cannot be empty." }).optional(),
+  content: z8.string().min(1, { message: "Content cannot be empty." }).optional(),
+  images: z8.array(z8.string()).default([]),
+  authorId: z8.string().min(1, { message: "Author ID cannot be empty." }).optional(),
+  mealid: z8.string().optional().nullable()
+}).refine(
+  (data) => Object.keys(data).length > 0,
+  { message: "At least one field must be provided to update the blog." }
+);
+
+// src/app/modules/blog/blog.controller.ts
+import status24 from "http-status";
+
+// src/app/modules/blog/blog.service.ts
+import status23 from "http-status";
+var createBlog = async (user, payload) => {
+  const { title, content, images, mealid } = payload;
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!existingUser) {
+    throw new AppError_default(status23.NOT_FOUND, "User not found.");
+  }
+  if (!images || !Array.isArray(images) || images.length === 0) {
+    throw new AppError_default(status23.BAD_REQUEST, "At least one image is required to create a blog.");
+  }
+  if (!mealid) {
+    throw new AppError_default(status23.BAD_REQUEST, "mealid ID is required to create a blog.");
+  }
+  const meal = await prisma.meal.findUnique({
+    where: { id: mealid }
+  });
+  if (!meal) {
+    throw new AppError_default(status23.BAD_REQUEST, "The provided mealid does not correspond to any existing mealid.");
+  }
+  if (!title || !content || !images) {
+    throw new AppError_default(status23.BAD_REQUEST, "Title, content, and image are required to create a blog.");
+  }
+  const blog = await prisma.blog.create({
+    data: {
+      title,
+      content,
+      images,
+      authorId: existingUser.id,
+      mealid: meal.id
+    }
+  });
+  return blog;
+};
+var getAllBlogs = async (query, page, limit, skip, sortBy, sortOrder, search) => {
+  const andConditions = [];
+  if (query) {
+    const orConditions = [];
+    if (query.title) {
+      orConditions.push({
+        title: {
+          contains: query.title,
+          mode: "insensitive"
+        }
+      });
+    }
+    if (query.createdAt) {
+      const dateRange = parseDateForPrisma(query.createdAt);
+      andConditions.push({ createdAt: dateRange.gte });
+    }
+    if (search) {
+      orConditions.push(
+        {
+          title: {
+            contains: query.search,
+            mode: "insensitive"
+          }
+        },
+        {
+          content: {
+            contains: query.search,
+            mode: "insensitive"
+          }
+        }
+      );
+    }
+  }
+  const blogs = await prisma.blog.findMany({
+    where: { AND: andConditions },
+    skip: skip || (page && limit ? (page - 1) * limit : void 0),
+    take: limit,
+    orderBy: { [sortBy]: sortOrder },
+    include: {
+      author: { select: { id: true, name: true, email: true, image: true } },
+      meal: true
+    }
+  });
+  const total = await prisma.blog.count({ where: { AND: andConditions } });
+  return {
+    data: blogs,
+    pagination: {
+      total,
+      page: page || 1,
+      limit: 9,
+      totalpage: limit ? Math.ceil(total / limit) : 1
+    }
+  };
+};
+var getSingleBlog = async (blogId) => {
+  const blog = await prisma.blog.findUnique({
+    where: { id: blogId },
+    include: {
+      author: { select: { id: true, name: true, email: true, image: true } },
+      meal: true
+    }
+  });
+  if (!blog) {
+    throw new AppError_default(404, "Blog not found");
+  }
+  return blog;
+};
+var updateBlog = async (blogId, payload, user) => {
+  const userFromDb = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!userFromDb) {
+    throw new AppError_default(404, "User not found");
+  }
+  const blog = await prisma.blog.findUnique({
+    where: { id: blogId }
+  });
+  if (!blog) {
+    throw new AppError_default(404, "Blog not found");
+  }
+  if (userFromDb.role !== "Admin" && blog.authorId !== user.id) {
+    throw new AppError_default(403, "You are not authorized to update this blog");
+  }
+  const updatedBlog = await prisma.blog.update({
+    where: { id: blogId },
+    data: {
+      content: payload.content,
+      images: payload.images,
+      title: payload.title
+    }
+  });
+  return updatedBlog;
+};
+var deleteBlog = async (user, blogId) => {
+  const userFromDb = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!userFromDb) {
+    throw new AppError_default(404, "User not found");
+  }
+  const blog = await prisma.blog.findUnique({
+    where: { id: blogId }
+  });
+  if (!blog) {
+    throw new AppError_default(404, "Blog not found");
+  }
+  if (userFromDb.role !== "Admin" && blog.authorId !== userFromDb.id) {
+    throw new AppError_default(403, "You are not authorized to delete this blog");
+  }
+  const deletedBlog = await prisma.blog.delete({
+    where: { id: blogId }
+  });
+  return deletedBlog;
+};
+var getBlogsByAuthor = async (authorId, page, limit, skip, sortBy = "createdAt", sortOrder = "desc") => {
+  const where = { authorId };
+  const blogs = await prisma.blog.findMany({
+    where,
+    skip: skip || (page && limit ? (page - 1) * limit : void 0),
+    take: limit,
+    orderBy: { [sortBy]: sortOrder },
+    include: {
+      author: { select: { id: true, name: true, email: true, image: true } }
+    }
+  });
+  const total = await prisma.blog.count({ where });
+  return {
+    data: blogs,
+    pagination: {
+      total,
+      page: page || 1,
+      limit: limit || blogs.length,
+      totalpage: limit ? Math.ceil(total / limit) : 1
+    }
+  };
+};
+var BlogServices = {
+  createBlog,
+  getAllBlogs,
+  getSingleBlog,
+  updateBlog,
+  deleteBlog,
+  getBlogsByAuthor
+};
+
+// src/app/modules/blog/blog.controller.ts
+var createBlog2 = catchAsync(async (req, res) => {
+  if (!req.user?.email) {
+    throw new AppError_default(status24.UNAUTHORIZED, "Unauthorized access. Please login first.");
+  }
+  const files = req.files;
+  const payload = {
+    ...req.body,
+    images: files?.length ? files.map((file) => file.path) : req.body.images
+  };
+  const user = req.user;
+  const result = await BlogServices.createBlog(user, payload);
+  sendResponse(res, {
+    httpStatusCode: status24.CREATED,
+    success: true,
+    message: "Blog created successfully",
+    data: result
+  });
+});
+var getAllBlogs2 = catchAsync(async (req, res) => {
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelping_default(req.query);
+  const { search } = req.query;
+  const result = await BlogServices.getAllBlogs(req.query, page, limit, skip, sortBy, sortOrder, search);
+  sendResponse(res, {
+    httpStatusCode: status24.OK,
+    success: true,
+    message: "Blogs fetched successfully",
+    data: result
+  });
+});
+var getSingleBlog2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await BlogServices.getSingleBlog(id);
+  sendResponse(res, {
+    httpStatusCode: status24.OK,
+    success: true,
+    message: "Blog fetched successfully",
+    data: result
+  });
+});
+var updateBlog2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await BlogServices.updateBlog(id, req.body, req.user);
+  sendResponse(res, {
+    httpStatusCode: status24.OK,
+    success: true,
+    message: "Blog updated successfully",
+    data: result
+  });
+});
+var deleteBlog2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await BlogServices.deleteBlog(req.user, id);
+  sendResponse(res, {
+    httpStatusCode: status24.OK,
+    success: true,
+    message: "Blog deleted successfully",
+    data: result
+  });
+});
+var BlogController = {
+  createBlog: createBlog2,
+  getAllBlogs: getAllBlogs2,
+  getSingleBlog: getSingleBlog2,
+  updateBlog: updateBlog2,
+  deleteBlog: deleteBlog2
+};
+
+// src/app/modules/blog/blog.route.ts
 var router11 = Router10();
-router11.use("/v1", mealRouter.router);
-router11.use("/v1/rag", Ragrouter);
-router11.use("/v1", providerRouter.router);
-router11.use("/v1", OrderRouter.router);
-router11.use("/v1", CategoryRouter.router);
-router11.use("/v1", UserRouter.router);
-router11.use("/v1", ReviewsRouter.router);
-router11.use("/v1", StatsRoutes);
-router11.use("/v1", PaymentRouter);
-router11.use("/v1/auth", authRouter.router);
-var IndexRouter = router11;
+router11.post(
+  "/blog",
+  auth_default([UserRoles.Admin]),
+  multerUpload.array("files"),
+  validateRequest(createBlogSchema),
+  BlogController.createBlog
+);
+router11.get(
+  "/blogs",
+  BlogController.getAllBlogs
+);
+router11.get(
+  "/blog/:id",
+  BlogController.getSingleBlog
+);
+router11.put(
+  "/blog/:id",
+  auth_default([UserRoles.Admin]),
+  validateRequest(updateBlogSchema),
+  BlogController.updateBlog
+);
+router11.delete(
+  "/blog/:id",
+  auth_default([UserRoles.Admin]),
+  BlogController.deleteBlog
+);
+var BlogRouters = router11;
+
+// src/app/modules/highlight/highlight.route.ts
+import { Router as Router11 } from "express";
+
+// src/app/modules/highlight/highlight.validation.ts
+import { z as z9 } from "zod";
+var createHighlightSchema = z9.object({
+  title: z9.string().min(1, { message: "Title is required." }),
+  description: z9.string().min(1, { message: "Description is required." }),
+  image: z9.string().url({ message: "Image must be a valid URL." }).optional().nullable()
+});
+var updateHighlightSchema = z9.object({
+  title: z9.string().optional(),
+  description: z9.string().optional(),
+  image: z9.any().optional()
+});
+
+// src/app/modules/highlight/highlight.controller.ts
+import status26 from "http-status";
+
+// src/app/modules/highlight/highlight.service.ts
+import status25 from "http-status";
+var createHighlight = async (user, payload) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!existingUser) {
+    throw new AppError_default(status25.NOT_FOUND, "User not found.");
+  }
+  const { title, description, image } = payload;
+  if (!title || !description) {
+    throw new AppError_default(status25.BAD_REQUEST, "Title and description are required to create a highlight.");
+  }
+  const highlight = await prisma.highlight.create({
+    data: {
+      title,
+      description,
+      image: image ?? null,
+      userId: existingUser.id
+    }
+  });
+  return highlight;
+};
+var getAllHighlights = async (query, page, limit, skip, sortBy = "createdAt", sortOrder = "desc", search) => {
+  const where = {};
+  if (query?.title) {
+    where.title = { contains: query.title, mode: "insensitive" };
+  }
+  if (query?.description) {
+    where.description = { contains: query.description, mode: "insensitive" };
+  }
+  if (search) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { description: { contains: search, mode: "insensitive" } }
+    ];
+  }
+  const highlights = await prisma.highlight.findMany({
+    where,
+    skip: skip || (page && limit ? (page - 1) * limit : void 0),
+    take: limit,
+    orderBy: { [sortBy]: sortOrder },
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true } }
+    }
+  });
+  const total = await prisma.highlight.count({ where });
+  return {
+    data: highlights,
+    pagination: {
+      total,
+      page: page || 1,
+      limit: limit || highlights.length,
+      totalpage: limit ? Math.ceil(total / limit) : 1
+    }
+  };
+};
+var getSingleHighlight = async (highlightId) => {
+  const highlight = await prisma.highlight.findUnique({
+    where: { id: highlightId },
+    include: {
+      user: { select: { id: true, name: true, email: true, image: true } }
+    }
+  });
+  if (!highlight) {
+    throw new AppError_default(status25.NOT_FOUND, "Highlight not found");
+  }
+  return highlight;
+};
+var updateHighlight = async (highlightId, payload, user) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!existingUser) {
+    throw new AppError_default(status25.NOT_FOUND, "User not found.");
+  }
+  const highlight = await prisma.highlight.findUnique({
+    where: { id: highlightId }
+  });
+  if (!highlight) {
+    throw new AppError_default(status25.NOT_FOUND, "Highlight not found");
+  }
+  if (existingUser.role !== "Admin" && highlight.userId !== existingUser.id) {
+    throw new AppError_default(status25.FORBIDDEN, "You are not authorized to update this highlight");
+  }
+  const updatedHighlight = await prisma.highlight.update({
+    where: { id: highlightId },
+    data: payload
+  });
+  return updatedHighlight;
+};
+var deleteHighlight = async (user, highlightId) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: user.email }
+  });
+  if (!existingUser) {
+    throw new AppError_default(status25.NOT_FOUND, "User not found.");
+  }
+  const highlight = await prisma.highlight.findUnique({
+    where: { id: highlightId }
+  });
+  if (!highlight) {
+    throw new AppError_default(status25.NOT_FOUND, "Highlight not found");
+  }
+  if (existingUser.role !== "Admin" && highlight.userId !== existingUser.id) {
+    throw new AppError_default(status25.FORBIDDEN, "You are not authorized to delete this highlight");
+  }
+  const deletedHighlight = await prisma.highlight.delete({
+    where: { id: highlightId }
+  });
+  return deletedHighlight;
+};
+var HighlightServices = {
+  createHighlight,
+  getAllHighlights,
+  getSingleHighlight,
+  updateHighlight,
+  deleteHighlight
+};
+
+// src/app/modules/highlight/highlight.controller.ts
+var createHighlight2 = catchAsync(async (req, res) => {
+  if (!req.user?.email) {
+    throw new AppError_default(status26.UNAUTHORIZED, "Unauthorized access. Please login first.");
+  }
+  const payload = {
+    ...req.body,
+    image: req.file?.path || req.body.image
+  };
+  const user = req.user;
+  const result = await HighlightServices.createHighlight(user, payload);
+  sendResponse(res, {
+    httpStatusCode: status26.CREATED,
+    success: true,
+    message: "Highlight created successfully",
+    data: result
+  });
+});
+var getAllHighlights2 = catchAsync(async (req, res) => {
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelping_default(req.query);
+  const result = await HighlightServices.getAllHighlights({
+    page,
+    limit,
+    skip,
+    sortBy,
+    sortOrder,
+    filters: req.query
+  });
+  sendResponse(res, {
+    httpStatusCode: status26.OK,
+    success: true,
+    message: "Highlights fetched successfully",
+    data: result
+  });
+});
+var getSingleHighlight2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await HighlightServices.getSingleHighlight(id);
+  sendResponse(res, {
+    httpStatusCode: status26.OK,
+    success: true,
+    message: "Highlight fetched successfully",
+    data: result
+  });
+});
+var updateHighlight2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const payload = {
+    ...req.body.title !== void 0 && { title: req.body.title },
+    ...req.body.description !== void 0 && { description: req.body.description },
+    ...req.body.image !== void 0 && { image: req.body.image }
+  };
+  const result = await HighlightServices.updateHighlight(id, payload, req.user);
+  sendResponse(res, {
+    httpStatusCode: status26.OK,
+    success: true,
+    message: "Highlight updated successfully",
+    data: result
+  });
+});
+var deleteHighlight2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await HighlightServices.deleteHighlight(req.user, id);
+  sendResponse(res, {
+    httpStatusCode: status26.OK,
+    success: true,
+    message: "Highlight deleted successfully",
+    data: result
+  });
+});
+var HighlightController = {
+  createHighlight: createHighlight2,
+  getAllHighlights: getAllHighlights2,
+  getSingleHighlight: getSingleHighlight2,
+  updateHighlight: updateHighlight2,
+  deleteHighlight: deleteHighlight2
+};
+
+// src/app/modules/highlight/highlight.route.ts
+var router12 = Router11();
+router12.post(
+  "/highlight",
+  auth_default([UserRoles.Admin]),
+  multerUpload.single("file"),
+  validateRequest(createHighlightSchema),
+  HighlightController.createHighlight
+);
+router12.get(
+  "/highlights",
+  HighlightController.getAllHighlights
+);
+router12.get(
+  "/highlight/:id",
+  HighlightController.getSingleHighlight
+);
+router12.put(
+  "/highlight/:id",
+  auth_default([UserRoles.Admin]),
+  validateRequest(updateHighlightSchema),
+  HighlightController.updateHighlight
+);
+router12.delete(
+  "/highlight/:id",
+  auth_default([UserRoles.Admin]),
+  HighlightController.deleteHighlight
+);
+var HighlightRouters = router12;
+
+// src/app/modules/newsletter/newsletter.route.ts
+import { Router as Router12 } from "express";
+
+// src/app/modules/newsletter/newsletter.validation.ts
+import { z as z10 } from "zod";
+var createNewsletterSchema = z10.object({
+  email: z10.string()
+});
+var updateNewsletterSchema = z10.object({
+  email: z10.string().optional()
+});
+
+// src/app/modules/newsletter/newsletter.controller.ts
+import status28 from "http-status";
+
+// src/app/modules/newsletter/newsletter.service.ts
+import status27 from "http-status";
+var createNewsletter = async (payload) => {
+  const existingUser = await prisma.user.findUnique({
+    where: { email: payload.user.email }
+  });
+  if (!existingUser) {
+    throw new AppError_default(status27.NOT_FOUND, "User not found.");
+  }
+  if (!payload.email) {
+    throw new AppError_default(status27.BAD_REQUEST, "Email and userId are required to subscribe to the newsletter.");
+  }
+  const existing = await prisma.newsletter.findUnique({
+    where: { email: payload.email }
+  });
+  if (existing) {
+    throw new AppError_default(status27.CONFLICT, "This email is already subscribed to the newsletter.");
+  }
+  const newsletter = await prisma.newsletter.create({
+    data: {
+      email: payload.email,
+      userId: existingUser.id
+    }
+  });
+  return newsletter;
+};
+var getAllNewsletters = async (query, page, limit, skip) => {
+  const andConditions = [];
+  if (query?.email) {
+    andConditions.push({
+      email: {
+        contains: query.email,
+        mode: "insensitive"
+      }
+    });
+  }
+  if (query?.createdAt) {
+    const dateRange = parseDateForPrisma(query.createdAt);
+    andConditions.push({ createdAt: dateRange.gte });
+  }
+  const newsletters = await prisma.newsletter.findMany({
+    skip: skip || (page && limit ? (page - 1) * limit : void 0),
+    take: limit,
+    where: { AND: andConditions },
+    orderBy: { createdAt: "desc" },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, image: true }
+      }
+    }
+  });
+  const total = await prisma.newsletter.count({ where: { AND: andConditions } });
+  return {
+    data: newsletters,
+    pagination: {
+      total,
+      page: page || 1,
+      limit: 9,
+      totalpage: limit ? Math.ceil(total / limit) : 1
+    }
+  };
+};
+var getSingleNewsletter = async (newsletterId) => {
+  const newsletter = await prisma.newsletter.findUnique({
+    where: { id: newsletterId },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, image: true }
+      }
+    }
+  });
+  if (!newsletter) {
+    throw new AppError_default(status27.NOT_FOUND, "Newsletter subscription not found");
+  }
+  return newsletter;
+};
+var updateNewsletter = async (newsletterId, payload) => {
+  const newsletter = await prisma.newsletter.findUnique({
+    where: { id: newsletterId }
+  });
+  if (!newsletter) {
+    throw new AppError_default(status27.NOT_FOUND, "Newsletter subscription not found");
+  }
+  if (payload.email && payload.email !== newsletter.email) {
+    const existing = await prisma.newsletter.findUnique({
+      where: { email: payload.email }
+    });
+    if (existing) {
+      throw new AppError_default(status27.CONFLICT, "This email is already subscribed to the newsletter.");
+    }
+  }
+  const updatedNewsletter = await prisma.newsletter.update({
+    where: { id: newsletterId },
+    data: payload
+  });
+  return updatedNewsletter;
+};
+var deleteNewsletter = async (newsletterId) => {
+  const newsletter = await prisma.newsletter.findUnique({
+    where: { id: newsletterId }
+  });
+  if (!newsletter) {
+    throw new AppError_default(status27.NOT_FOUND, "Newsletter subscription not found");
+  }
+  const deletedNewsletter = await prisma.newsletter.delete({
+    where: { id: newsletterId }
+  });
+  return deletedNewsletter;
+};
+var NewsletterService = {
+  createNewsletter,
+  getAllNewsletters,
+  getSingleNewsletter,
+  updateNewsletter,
+  deleteNewsletter
+};
+
+// src/app/modules/newsletter/newsletter.controller.ts
+var createNewsletter2 = catchAsync(async (req, res) => {
+  if (!req.user?.email) {
+    throw new AppError_default(status28.UNAUTHORIZED, "Unauthorized access. Please login first.");
+  }
+  const { email } = req.body;
+  console.log(email, "email");
+  const result = await NewsletterService.createNewsletter({ email, user: req.user });
+  sendResponse(res, {
+    httpStatusCode: status28.CREATED,
+    success: true,
+    message: "Newsletter subscription created successfully",
+    data: result
+  });
+});
+var getAllNewsletters2 = catchAsync(async (req, res) => {
+  const { page, limit, skip, sortBy, sortOrder } = paginationHelping_default(req.query);
+  const result = await NewsletterService.getAllNewsletters(req.query, page, limit, skip);
+  sendResponse(res, {
+    httpStatusCode: status28.OK,
+    success: true,
+    message: "Newsletters fetched successfully",
+    data: result
+  });
+});
+var getSingleNewsletter2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await NewsletterService.getSingleNewsletter(id);
+  sendResponse(res, {
+    httpStatusCode: status28.OK,
+    success: true,
+    message: "Newsletter fetched successfully",
+    data: result
+  });
+});
+var updateNewsletter2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const payload = {
+    ...req.body.email !== void 0 && { email: req.body.email }
+  };
+  const result = await NewsletterService.updateNewsletter(id, payload);
+  sendResponse(res, {
+    httpStatusCode: status28.OK,
+    success: true,
+    message: "Newsletter updated successfully",
+    data: result
+  });
+});
+var deleteNewsletter2 = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await NewsletterService.deleteNewsletter(id);
+  sendResponse(res, {
+    httpStatusCode: status28.OK,
+    success: true,
+    message: "Newsletter deleted successfully",
+    data: result
+  });
+});
+var NewsletterController = {
+  createNewsletter: createNewsletter2,
+  getAllNewsletters: getAllNewsletters2,
+  getSingleNewsletter: getSingleNewsletter2,
+  updateNewsletter: updateNewsletter2,
+  deleteNewsletter: deleteNewsletter2
+};
+
+// src/app/modules/newsletter/newsletter.route.ts
+var router13 = Router12();
+router13.post(
+  "/newsletter",
+  auth_default([UserRoles.Admin]),
+  validateRequest(createNewsletterSchema),
+  NewsletterController.createNewsletter
+);
+router13.get(
+  "/newsletters",
+  auth_default([UserRoles.Admin]),
+  NewsletterController.getAllNewsletters
+);
+router13.get(
+  "/newsletter/:id",
+  NewsletterController.getSingleNewsletter
+);
+router13.put(
+  "/newsletter/:id",
+  auth_default([UserRoles.Admin]),
+  validateRequest(updateNewsletterSchema),
+  NewsletterController.updateNewsletter
+);
+router13.delete(
+  "/newsletter/:id",
+  auth_default([UserRoles.Admin]),
+  NewsletterController.deleteNewsletter
+);
+var NewsletterRouters = router13;
+
+// src/app/routes/index.route.ts
+var router14 = Router13();
+router14.use("/v1", mealRouter.router);
+router14.use("/v1/rag", Ragrouter);
+router14.use("/v1/newsletter", NewsletterRouters);
+router14.use("/v1", BlogRouters);
+router14.use("/v1", HighlightRouters);
+router14.use("/v1", providerRouter.router);
+router14.use("/v1", OrderRouter.router);
+router14.use("/v1", CategoryRouter.router);
+router14.use("/v1", UserRouter.router);
+router14.use("/v1", ReviewsRouter.router);
+router14.use("/v1", StatsRoutes);
+router14.use("/v1", PaymentRouter);
+router14.use("/v1/auth", authRouter.router);
+var IndexRouter = router14;
 
 // src/app.ts
 var app = express2();

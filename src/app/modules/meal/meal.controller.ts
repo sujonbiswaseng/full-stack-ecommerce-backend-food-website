@@ -17,6 +17,7 @@ const createMeal = catchAsync(async (req: Request, res: Response) => {
     ...req.body,
     images: files?.length ? files.map((file) => file.path) : req.body.images,
   };
+  console.log(payload,'payload')
   const result = await mealService.createMeal(payload, user.email as string);
   sendResponse(res, {
     httpStatusCode: status.CREATED,
