@@ -1,15 +1,16 @@
 
 ### Project name : 
-##### FoodHub 🍱 | Advanced Full-Stack Multi-Vendor Food Ordering Platform
+##### Bitebase 🍱 | Advanced Full-Stack Multi-Vendor Food Ordering Platform
 
 ### Project description : 
-##### FoodHub is a modern full-stack multi-vendor food ordering platform where customers can discover meals, place orders, and track deliveries, providers can manage menus and orders, and admins can control users, categories, and platform operations through a secure, responsive, and scalable system.
+##### **BiteBase** is an AI-powered full-stack multi-vendor food ordering platform that allows customers to discover meals, place orders, and track deliveries, while vendors manage menus and orders through a secure and responsive dashboard. The platform includes smart AI features, secure authentication, payment integration, and scalable admin management for a seamless food delivery experience.
+
 
 ### Quick Links
- - Frontend Repo    : https://github.com/sujonbiswasdev/frontend-next-level-assignment-4.git
-- Backend Repo     :https://github.com/sujonbiswasdev/backend-next-level-assignment-4.git
-- Frontend Live    : https://frontend-next-level-assingment-4.vercel.app
-- Backend Live     : https://backend-next-level-assignment-4.vercel.app
+ - Frontend Repo    : https://github.com/sujonbiswaseng/full-stack-ecommerce-frontend-food-website.git
+- Backend Repo     :https://github.com/sujonbiswaseng/full-stack-ecommerce-backend-food-website.git
+- Frontend Live    : https://full-stack-ecommerce-frontend-websi.vercel.app
+- Backend Live     : https://full-stack-ecommerce-backend-food-w.vercel.app
 
 
 
@@ -104,11 +105,11 @@ Deployment
 - vercel(Backend)
 
 ## Setup Instructions
-- (frontend) : git clone https://github.com/sujonbiswasdev/frontend-next-level-assignment-4.git
-- (backend) : git clone https://github.com/sujonbiswasdev/backend-next-level-assignment-4.git
+- (frontend) : git clone https://github.com/sujonbiswaseng/full-stack-ecommerce-frontend-food-website.git
+- (backend) : git clone https://github.com/sujonbiswaseng/full-stack-ecommerce-backend-food-website.git
 
 ### Backend Setup
-- cd backend-next-level-assignment-4
+- cd full-stack-ecommerce-backend-food-website.git
 - pnpm install
 - Create .env file:
 ```typescript
@@ -158,7 +159,7 @@ Run the cmd:
 
 ### Frontend Setup
 
-- cd frontend-next-level-assignment-4
+- cd full-stack-ecommerce-frontend-food-website.git
 - pnpm install
 - Create .env file:
 
@@ -166,8 +167,6 @@ Run the cmd:
 
 BACKEND_URL=http://localhost:5000
 FRONTEND_URL=http://loacalhost:3000
-AUTH_URL=http://localhost:5000
-API_URL=http://localhost:5000
 
 ACCESS_TOKEN_SECRET=accestoken_secret
 REFRESH_TOKEN_SECRET=refreshtoken_secret
