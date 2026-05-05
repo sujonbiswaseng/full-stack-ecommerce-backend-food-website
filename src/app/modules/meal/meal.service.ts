@@ -60,13 +60,19 @@ const getAllmeals = async (
     if (search) {
       orConditions.push(
         {
-          meals_name: {
+          title: {
             contains: search,
             mode: "insensitive",
           },
         },
         {
           description: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+        {
+          location: {
             contains: search,
             mode: "insensitive",
           },
@@ -88,6 +94,11 @@ const getAllmeals = async (
         },
       });
     }
+
+  if (data?.date) {
+    const dateRange = parseDateForPrisma(data.date);
+    andConditions.push({ date: dateRange.gte });
+  }
     if (orConditions.length > 0) {
       andConditions.push({ OR: orConditions });
     }
@@ -295,16 +306,14 @@ const UpdateMeals = async (data: IUpdateMealsData, mealid: string) => {
 };
 
 const DeleteMeals = async (mealid: string) => {
-  const orderitem=await prisma.orderitem.findFirst({
+  const orderitem=await prisma.meal.findUnique({
     where:{
-      mealId:mealid
+      id:mealid
     },
     select:{
-      orderId:true
+      orderitem:true
     }
   })
-  await prisma.order.delete({where:{id:orderitem?.orderId}})
-
  const result = await prisma.meal.delete({
     where: {
       id: mealid,
@@ -343,7 +352,7 @@ const getOwnMeals = async (
     if (search) {
       orConditions.push(
         {
-          meals_name: {
+          title: {
             contains: search,
             mode: "insensitive",
           },
@@ -513,7 +522,7 @@ const getAllMealsForAdmin=async(
       if (search) {
         orConditions.push(
           {
-            meals_name: {
+            title: {
               contains: search,
               mode: "insensitive",
             },

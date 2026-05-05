@@ -6,8 +6,6 @@ import { ICreateBlogInput, IUpdateBlogInput } from "./blog.interface";
 import { truncateSync } from "fs";
 import { BlogWhereInput } from "../../../generated/prisma/models";
 import { parseDateForPrisma } from "../../utils/parseDate";
-
-
 const createBlog = async (user:IRequestUser, payload: ICreateBlogInput) => {
   const { title, content, images,mealid } = payload;
   const existingUser = await prisma.user.findUnique({
@@ -71,24 +69,28 @@ const getAllBlogs = async (
       const dateRange = parseDateForPrisma(query.createdAt);
       andConditions.push({ createdAt: dateRange.gte });
     }
+
     if (search) {
+      const orConditions: any[] = [];
       orConditions.push(
         {
           title: {
-            contains: query.search,
+            contains: search,
             mode: "insensitive",
           },
         },
         {
           content: {
-            contains: query.search,
+            contains: search,
             mode: "insensitive",
           },
         }
       );
+      andConditions.push({OR:orConditions})
     }
   }
 
+  console.log(andConditions,'sdfasf')
   const blogs = await prisma.blog.findMany({
     where:{AND:andConditions},
     skip: skip || ((page && limit) ? (page - 1) * limit : undefined),

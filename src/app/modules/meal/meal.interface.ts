@@ -10,7 +10,7 @@ export type IUpdateMealsData = z.infer<typeof UpdatemealData>;
 export type IMealQueryRequest = z.infer<typeof mealQuerySchema>;
 
 export interface MealQuery  {
-    meals_name?: string | undefined;
+    title?: string | undefined;
     description?: string | undefined;
     price?: number | undefined;
     dietaryPreference?: string | undefined;

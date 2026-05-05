@@ -14,7 +14,7 @@ const router = Router();
 // Routes for newsletter CRUD
 router.post(
   "/newsletter",
-  auth([UserRoles.Admin]),
+  auth([UserRoles.Admin,UserRoles.Customer,UserRoles.Provider]),
   validateRequest(createNewsletterSchema),
   NewsletterController.createNewsletter
 );

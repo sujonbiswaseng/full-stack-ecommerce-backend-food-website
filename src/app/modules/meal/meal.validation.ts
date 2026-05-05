@@ -92,7 +92,7 @@ export const UpdatemealData = z.object({
 // 1. query params
 export const mealQuerySchema = z.object({
   data: z.object({
-    meals_name: z.string().optional(),
+    title: z.string().optional(),
     description: z.string().optional(),
     price: z.coerce.number().optional(), // Coerce handles strings from forms/URLs
     dietaryPreference: z.string().optional(),

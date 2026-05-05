@@ -1040,6 +1040,21 @@ var auth_default = auth2;
 
 // src/app/modules/meal/meal.service.ts
 import status5 from "http-status";
+
+// src/app/utils/parseDate.ts
+function parseDateForPrisma(dateStr) {
+  const parsedDate = new Date(dateStr);
+  if (isNaN(parsedDate.getTime())) {
+    throw new Error("Invalid date format! Use YYYY-MM-DD or ISO string.");
+  }
+  const startOfDay = new Date(parsedDate);
+  startOfDay.setHours(0, 0, 0, 0);
+  const endOfDay = new Date(parsedDate);
+  endOfDay.setHours(23, 59, 59, 999);
+  return { gte: startOfDay, lte: endOfDay };
+}
+
+// src/app/modules/meal/meal.service.ts
 var createMeal = async (data, email) => {
   if (!data.images) {
     throw new AppError_default(404, "Image is required");
@@ -1075,13 +1090,19 @@ var getAllmeals = async (data, isAvailable, page, limit, skip, sortBy, sortOrder
     if (search) {
       orConditions.push(
         {
-          meals_name: {
+          title: {
             contains: search,
             mode: "insensitive"
           }
         },
         {
           description: {
+            contains: search,
+            mode: "insensitive"
+          }
+        },
+        {
+          location: {
             contains: search,
             mode: "insensitive"
           }
@@ -1102,6 +1123,10 @@ var getAllmeals = async (data, isAvailable, page, limit, skip, sortBy, sortOrder
           mode: "insensitive"
         }
       });
+    }
+    if (data?.date) {
+      const dateRange = parseDateForPrisma(data.date);
+      andConditions.push({ date: dateRange.gte });
     }
     if (orConditions.length > 0) {
       andConditions.push({ OR: orConditions });
@@ -1313,7 +1338,7 @@ var getOwnMeals = async (email, data, isAvailable, page, limit, skip, sortBy, so
     if (search) {
       orConditions.push(
         {
-          meals_name: {
+          title: {
             contains: search,
             mode: "insensitive"
           }
@@ -1469,7 +1494,7 @@ var getAllMealsForAdmin = async (data, isAvailable, page, limit, skip, sortBy, s
     if (search) {
       orConditions.push(
         {
-          meals_name: {
+          title: {
             contains: search,
             mode: "insensitive"
           }
@@ -1631,6 +1656,7 @@ var createMeal2 = catchAsync(async (req, res) => {
     ...req.body,
     images: files?.length ? files.map((file) => file.path) : req.body.images
   };
+  console.log(payload, "payload");
   const result = await mealService.createMeal(payload, user.email);
   sendResponse(res, {
     httpStatusCode: status6.CREATED,
@@ -1945,7 +1971,7 @@ var UpdatemealData = z.object({
 });
 var mealQuerySchema = z.object({
   data: z.object({
-    meals_name: z.string().optional(),
+    title: z.string().optional(),
     description: z.string().optional(),
     price: z.coerce.number().optional(),
     // Coerce handles strings from forms/URLs
@@ -2349,19 +2375,6 @@ import { Router as Router3 } from "express";
 // src/app/modules/order/order.service.ts
 import { v6 as uuidv6 } from "uuid";
 import status10 from "http-status";
-
-// src/app/utils/parseDate.ts
-function parseDateForPrisma(dateStr) {
-  const parsedDate = new Date(dateStr);
-  if (isNaN(parsedDate.getTime())) {
-    throw new Error("Invalid date format! Use YYYY-MM-DD or ISO string.");
-  }
-  const startOfDay = new Date(parsedDate);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(parsedDate);
-  endOfDay.setHours(23, 59, 59, 999);
-  return { gte: startOfDay, lte: endOfDay };
-}
 
 // src/app/config/stripe.config.ts
 import Stripe from "stripe";
@@ -5919,22 +5932,25 @@ var getAllBlogs = async (query, page, limit, skip, sortBy, sortOrder, search) =>
       andConditions.push({ createdAt: dateRange.gte });
     }
     if (search) {
-      orConditions.push(
+      const orConditions2 = [];
+      orConditions2.push(
         {
           title: {
-            contains: query.search,
+            contains: search,
             mode: "insensitive"
           }
         },
         {
           content: {
-            contains: query.search,
+            contains: search,
             mode: "insensitive"
           }
         }
       );
+      andConditions.push({ OR: orConditions2 });
     }
   }
+  console.log(andConditions, "sdfasf");
   const blogs = await prisma.blog.findMany({
     where: { AND: andConditions },
     skip: skip || (page && limit ? (page - 1) * limit : void 0),
@@ -6594,7 +6610,7 @@ var NewsletterController = {
 var router13 = Router12();
 router13.post(
   "/newsletter",
-  auth_default([UserRoles.Admin]),
+  auth_default([UserRoles.Admin, UserRoles.Customer, UserRoles.Provider]),
   validateRequest(createNewsletterSchema),
   NewsletterController.createNewsletter
 );
@@ -6624,7 +6640,7 @@ var NewsletterRouters = router13;
 var router14 = Router13();
 router14.use("/v1", mealRouter.router);
 router14.use("/v1/rag", Ragrouter);
-router14.use("/v1/newsletter", NewsletterRouters);
+router14.use("/v1", NewsletterRouters);
 router14.use("/v1", BlogRouters);
 router14.use("/v1", HighlightRouters);
 router14.use("/v1", providerRouter.router);
