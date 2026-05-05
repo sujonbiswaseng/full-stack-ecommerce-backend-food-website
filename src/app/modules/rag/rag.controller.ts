@@ -45,6 +45,7 @@ const queryRag = catchAsync(async (req: Request, res: Response) => {
   console.log(cacheKey,'es')
   try {
     const cacheResult = await redisService.get(cacheKey)
+    
     if(cacheResult){
     return  sendResponse(res,{
         success:true,

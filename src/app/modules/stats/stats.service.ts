@@ -220,4 +220,53 @@ export const getProviderDashboardStats = async (userId: string) => {
   }
 };
 
-export const statsService = { getDashboardStatsData };
+
+export const getPublicStatsData = async () => {
+  try {
+    // Total Events
+    const totalmeals = await prisma.meal.count();
+
+    // Total Users
+    const totalUsers = await prisma.user.count();
+    const totalCustomer= await prisma.user.count({
+      where: { role: "Customer" },
+    });
+
+    // Total Managers (role: Provider)
+    const totalprovider = await prisma.user.count({
+      where: { role: "Provider" },
+    });
+
+    // Total Admins (role: ADMIN)
+    const totalAdmins = await prisma.user.count({
+      where: { role: "Admin" },
+    });
+
+    // Total orders (number of unique orders)
+    const totalorders = await prisma.order.count();
+    const totalcategory = await prisma.category.count();
+
+    // Total Reviews
+    const totalReviews = (await prisma.review?.count?.({where:{status:"APPROVED",parentId:null}})) ?? 0;
+
+    // Total Newsletters
+    const totalNewsletters = (await prisma.newsletter?.count?.()) ?? 0;
+
+    return {
+      totalmeals,
+      totalUsers,
+      totalCustomer,
+      totalprovider,
+      totalAdmins,
+      totalorders,
+      totalcategory,
+      totalReviews,
+      totalNewsletters,
+    };
+  } catch (error) {
+    console.error("Failed to fetch public stats:", error);
+    throw new Error("Could not fetch public stats");
+  }
+};
+
+export const statsService = { getDashboardStatsData ,getPublicStatsData};

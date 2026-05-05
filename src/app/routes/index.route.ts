@@ -9,12 +9,19 @@ import { authRouter } from "../modules/auth/auth.route";
 import { StatsRoutes } from "../modules/stats/stats.route";
 import { PaymentRouter } from "../modules/payment/payment.route";
 import { Ragrouter } from "../modules/rag/rag.route";
+import { BlogRouters } from "../modules/blog/blog.route";
+import { HighlightRouters } from "../modules/highlight/highlight.route";
+import { NewsletterRouters } from "../modules/newsletter/newsletter.route";
 
 const router = Router()
 
 // meal
 router.use("/v1",mealRouter.router)
 router.use('/v1/rag',Ragrouter)
+router.use('/v1/newsletter',NewsletterRouters);
+router.use('/v1',BlogRouters);
+router.use('/v1/highlight', HighlightRouters);
+
 
 
 // provider

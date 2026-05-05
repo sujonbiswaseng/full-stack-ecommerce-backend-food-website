@@ -12,4 +12,8 @@ router.get(
   StatsController.getDashboardStatsData
 );
 
+router.get(
+  '/publicstats',StatsController.getPublicStatsData
+)
+
 export const StatsRoutes = router;
